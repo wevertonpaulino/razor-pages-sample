@@ -5,24 +5,39 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RazorPagesBook.Data;
 
 namespace RazorPagesBook
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            Environment = environment;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            if (Environment.IsDevelopment())
+            {
+                services.AddDbContext<BookContext>(options =>
+                    options.UseSqlite(Configuration.GetConnectionString("BookConnection")));
+            }
+            else
+            {
+                services.AddDbContext<BookContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("BookConnection")));
+            }
+
             services.AddRazorPages();
         }
 
